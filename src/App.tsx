@@ -8,10 +8,26 @@ const Wrapper = styled.div`
   text-align: center;
 `
 
+const Button = styled.button`
+  background: blue;
+  color: white;
+  padding: 10px;
+  cursor: pointer;
+
+  :hover, :active {
+    background: white;
+    color: black;
+  }
+  :focus {
+    outline: none;
+  }
+`
+
 function App() {
   return (
     <Wrapper>
       <h1>Hello World!</h1>
+      <Button>CLICK!</Button>
     </Wrapper> 
   );
 }
