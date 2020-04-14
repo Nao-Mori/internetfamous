@@ -1,6 +1,21 @@
 $small: 15px;
+$blue: rgb(50,50,150);
 
 * {
     margin-top: 50px;
     // font-size: $small;
+}
+
+.flex-box {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    
+    div {
+        width: 300px;
+        height: 200px;
+        background: $blue;
+        margin: 20px auto;
+    }
 }

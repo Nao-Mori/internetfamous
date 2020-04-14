@@ -28,6 +28,11 @@ function App() {
     <Wrapper>
       <h1>Hello World!</h1>
       <Button>CLICK!</Button>
+      <div className="flex-box">
+        <div/>
+        <div/>
+        <div/>
+      </div>
     </Wrapper> 
   );
 }
