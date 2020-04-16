@@ -1,11 +1,24 @@
-import React from 'react';
+import React, { useState } from 'react';
 import styled from "styled-components"
 
+const boxes = [
+  "red",
+  "yellow",
+  "blue",
+  "green",
+  "orange",
+  "pink",
+  "brown"
+]
+
 const Wrapper = styled.div`
-  max-width: 1000px;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 0 20px;
   text-align: center;
+  
+  @media(max-width: 1280px) {
+    max-width: 900px;
+  }
 `
 
 const Button = styled.button`
@@ -24,14 +37,16 @@ const Button = styled.button`
 `
 
 function App() {
+  const [toggled, setToggled] = useState(false)
+
   return (
     <Wrapper>
       <h1>Hello World!</h1>
-      <Button>CLICK!</Button>
-      <div className="flex-box">
-        <div/>
-        <div/>
-        <div/>
+      <Button onClick={()=>setToggled(!toggled)} >CLICK!</Button>
+      <div className="flex-box" style={{ flexDirection: toggled? "row-reverse" : "row" }}>
+        {boxes.map((color, key)=>(
+          <div key={key} style={{ background: color }} />
+        ))}
       </div>
     </Wrapper> 
   );
