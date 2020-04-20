@@ -11,20 +11,9 @@ $blue: rgb(50,50,150);
     flex-wrap: wrap;
     
     div {
-        width: 280px;
-        height: 380px;
-        margin: 10px
-        
-    }
-}
-
-@media(max-width: 972px) {
-    .flex-box {
-        div {
-            width: 31.33%;
-            padding-top: 42.25%;
-            height: auto;
-            margin: 1%;
-        }
+        width: 31.33%;
+        padding-top: 42.25%;
+        height: auto;
+        margin: 1%;
     }
 }

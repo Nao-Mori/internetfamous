@@ -26,10 +26,12 @@ const Button = styled.button`
   color: white;
   padding: 10px;
   cursor: pointer;
+  border: none;
+  border-radius: 23px;
+  text-decoration: none;
 
   :hover, :active {
-    background: white;
-    color: black;
+    background: gray;
   }
   :focus {
     outline: none;
