@@ -1,23 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { 
-  Button, Typography,
   Box, IconButton, Dialog, DialogContent,
-  Grid, Tooltip,
+  Grid, withStyles,
   DialogActions,
 } from '@material-ui/core';
 import { 
-  Delete, PanTool, ExitToApp, AccountCircle, Face,
+  Delete, ExitToApp,
 } from "@material-ui/icons";
-import CardBox from "@material-ui/core/Card";
 import { curses } from "./Cards";
-import { botMove } from "./Actions";
-
-const delay = () => new Promise(async(callback:any) => {
-  let hi = setTimeout(()=>{
-    callback();
-    clearTimeout(hi);
-  }, 500);
-});
+import { Card, GameCard, Effect, botMove, getOpposite, delay } from "./Actions";
+import Button2 from "@material-ui/core/Button";
 
 const checkDecrease = (buff:string) => {
   if(buff === "thorns") return true;
@@ -26,10 +18,10 @@ const checkDecrease = (buff:string) => {
 
 const fieldColor = (tribe:string, turn:string) => {
   if(!tribe) return "inherit";
-  if(tribe === "Water" && turn) return "rgba(180,180,255, 0.5)";
-  else if(tribe === "Water") return "rgba(220,220,255, 0.5)";
-  else if(tribe === "Fire" && turn) return "rgba(255,180,180, 0.5)";
-  else return "rgba(255,220,220, 0.5)";
+  if(tribe === "Water" && turn) return "rgba(180,180,255, 0.7)";
+  else if(tribe === "Water") return "rgba(240,240,255, 0.5)";
+  else if(tribe === "Fire" && turn) return "rgba(255,180,180, 0.7)";
+  else return "rgba(255,240,240, 0.5)";
 }
 
 const times = (time:string) => {
@@ -44,173 +36,12 @@ const times = (time:string) => {
 const baseGold = 2;
 let botTurn = false;
 
-const Card = ({ card, targeted, disabled, info }:any) => {
-  const getDamage = (damage:number) => {
-    if(!info) return damage;
-    let d = damage;
-    if(card.unit === "minion") {
-      d += card.buff.strength || 0;
-      if(card.debuff.weak) d *= 0.75;
-    } else {
-      d += info.strength || 0;
-      if(info.weak) d *= 0.75;
-    }
-
-    if((info.time === "Noon" && info.tribe === "Fire") || (info.time === "Midnight" && info.tribe === "Water")) return Math.ceil(d * 1.3);
-    else return Math.ceil(d);
-  }
-
-  const getBlock = (block:number) => {
-    if(!info) return block;
-    let b = block;
-    if(card.unit === "minion") {
-      if(card.debuff.flail) b *= 0.75;
-    } else {
-      if(info.flail) b *= 0.75;
-    }
-
-    if((info.time === "Night" && info.tribe === "Fire") || (info.time === "Morning" && info.tribe === "Water")) return Math.ceil(b * 1.3);
-    else return Math.ceil(b);
-  }
-
-  return (
-    <CardBox
-    elevation={10}
-    style={{ 
-      width: "145px", margin: "5px", textAlign: "center",
-      background: targeted ? "rgb(255,255,200)" : disabled ? "rgb(100,100,100)" : card.unit === "hero" ? "white" : card.unit === "minion" ? "rgb(245,245,245)" : card.unit === "curse" || card.unit === "debuff" ? "rgb(255,230,255)" :
-      card.unit === "power" ? "rgb(220,220,255)" : card.unit === "skill" ? "rgb(220,255,220)" : "rgb(255,220,220)",
-      cursor: targeted ? "pointer" : "inherit",
-      minHeight: "215px",
-      outline: card.debuff === 1 ? "solid 3px red" : card.debuff === 2 ? "solid 3px rgb(245,0,255)" : card.debuff === 3 ? "solid 3px orange" : "none",
-      padding: "2px"
-    }}>
-      <div>
-        <Tooltip title={<Typography>{card.name}</Typography>}>
-          <Typography noWrap style={{ fontSize: "80%", fontWeight: "bold" }}>
-            {card.cost !== undefined ? (
-              <b style={{ backgroundColor: "rgb(50,50,255)", color: "white", borderRadius: "50%", padding: "2px 6px" }}>
-                {card.cost === -1 ? "X" : card.cost}
-              </b>
-            ) : <Face style={{ color: "orange" }} />} {card.name}
-          </Typography>
-        </Tooltip>
-        <div style={{ textAlign: "center", height: "70px", padding: "auto", margin: "5px auto" }}>
-        {card.img ? (
-          <img alt="cardpic" src={card.img} className="compact-image2" />
-        ) : card.unit === "attack" ? (
-          <img alt="cardpic" src={"https://img.joomcdn.net/32fe14430a8c581241b06ce33658a53bf86c68d0_original.jpeg"} className="compact-image2" />
-        ) : card.building ? (
-          <img alt="cardpic" src={"https://spng.pngfind.com/pngs/s/129-1291830_castle-tower-fortress-castle-old-tower-clip-art.png"} className="compact-image2" />
-        ) : card.unit === "minion" ? (
-          <img alt="cardpic" src={"https://previews.123rf.com/images/hatza/hatza1211/hatza121100037/16591600-viking-warrior-cartoon.jpg"} className="compact-image2" />
-        ) : card.actions && card.actions[0] && card.actions[0].action === "block" ? (
-          <img alt="cardpic" src={"https://cdn0.iconfinder.com/data/icons/communication-and-multimedia/48/communication_and_multimedia_flat_icons-10-512.png"} className="compact-image2" />
-        ) : card.unit === "skill" ? (
-          <img alt="cardpic" src={"https://c8.alamy.com/comp/2AC6X44/cute-cartoon-poison-bottle-drawing-green-magic-potion-in-glass-vial-classic-video-game-item-isolated-vector-clip-art-illustration-2AC6X44.jpg"} className="compact-image2" />
-        ): card.unit === "curse" ? (
-          <img alt="cardpic" src={"https://cdn.xxl.thumbs.canstockphoto.com/magic-book-icon-icon-cartoon-magic-book-icon-in-icon-in-cartoon-style-isolated-vector-illustration-illustration_csp45478923.jpg"} className="compact-image2" />
-        ) : card.unit === "debuff" ? (
-          <img alt="cardpic" src={"https://previews.123rf.com/images/lineartestpilot/lineartestpilot1802/lineartestpilot180270021/95739430-cartoon-magic-potion.jpg"} className="compact-image2" />
-        ) : card.unit === "power" ? (
-          <img alt="cardpic" src={"https://thumbs.dreamstime.com/b/colorful-cartoon-energy-symbol-power-thunder-electricity-themed-vector-illustration-icon-stamp-label-certificate-brochure-gift-141945220.jpg"} className="compact-image2" />
-        ) : (
-          <AccountCircle style={{ fontSize: "70px", color: "rgb(150,150,150)" }} />
-        )}
-        </div>
-        {card.hp ? <Typography style={{ marginBottom: "2px", backgroundColor: "red", color: "white", fontWeight: "bold" }}>{card.hp}</Typography> : null}
-        {card.taunt ? <p className="cardtext" style={{ background: "rgb(100,100,100)" }}>Taunt</p> : null}
-        {card.unit === "minion" ? (
-          <>
-            <p style={{ margin: 0 }}>Minion Action:</p>
-            {card.actions.map((action:any,key:number)=>(
-              <Typography key={key} style={{ fontWeight: "bold" }}>
-                {action.action === "curse" ? 
-                `Curse: Add to discard` : ""} {action.el === "hp" ? `${getDamage(action.value)} damage` :
-                action.action === "block" ? `${getBlock(action.value)} ${action.el === "block" ? "block" : "tough"}` :
-                `${action.multiply ? "x" : ""}${action.value} ${action.el}`} {action.aoe ? "to all" : ""}
-              </Typography>
-            ))}
-          </>
-        ) : card.actions ? card.actions.map((action:any,key:number)=>(
-          <Typography key={key} style={{ fontWeight: "bold" }}>
-            {action.action === "curse" ? 
-            `Curse: Add${action.drawPile ? " to draw" : " to discard"}` : ""} {action.el === "hp" ? `${getDamage(action.value)} damage` :
-            action.action === "block" ? `${getBlock(action.value)} ${action.el === "block" ? "block" : "tough"}` :
-            `${action.multiply ? "x" : ""}${action.value} ${action.el}`} {action.aoe ? "to all" : action.self ? "to itself" : action.minionOnly ? "to a minion" : ""}
-          </Typography>
-        )) : null}
-        {card.sp ? (
-          Object.keys(card.sp).map((key:any)=>{
-            const value = card.sp[key];
-            return <p key={key} style={{ background: "rgb(0,155,155)" }} className="cardtext">{key} {value}</p>
-          })
-        ) : null}
-        {card.hp ? (
-          <div>
-            {card.spBlock ? <p style={{ background: "orange" }} className="cardtext">Tough: {card.spBlock}</p> : null}
-            {card.block ? <p style={{ background: "rgb(100,100,255)" }} className="cardtext">{card.block}</p> : null}
-            {Object.keys(card.buff).map((key:any)=>{
-              const value = card.buff[key];
-              if(value) return <p key={key} className="cardtext" style={{ background: "rgb(255,100,100)" }}>{key} {value}</p>
-              else return null;
-            })}
-            {Object.keys(card.debuff).map((key:any)=>{
-              const value = card.debuff[key];
-              if(value) return <p key={key} style={{ background: "rgb(255,50,255)"}} className="cardtext">{key} {value}</p>
-              else return null;
-            })}
-          </div>
-        ) : null}
-        {card.curse ? (
-          card.curse.map((curse:any, key:number)=>(
-            <p key={key} style={{ background: "rgb(200,50,200)" }} className="cardtext">{info && info.scar ? Math.round(curse.value * 2) : curse.value} {curse.action} to yourself</p> 
-          ))
-        ) : null}
-      </div>
-    </CardBox>
-  )
-}
-
-const GameCard = ({ card, act, me, click, targeted, info }:any) => {
-  const [show, setShow] = useState(false);
-
-  return (
-    <Box 
-    style={{ pointerEvents: targeted ? "all" : "none" }}
-    onMouseEnter={()=>setShow(true)} onMouseLeave={()=>setShow(false)}>
-      <div onClick={click}>
-        <Card card={card} targeted={targeted} me={me} info={info} /> 
-      </div>
-      {show ? (
-      <div style={{ position: "absolute", background: "white" }}>
-        {me ? (
-          <>
-          <IconButton
-          size="small"
-          onClick={()=>{
-            act("take");
-          }}
-          ><PanTool /></IconButton>
-          <IconButton
-          size="small"
-          onClick={()=>{
-            act("shuffle");
-          }}
-          ><ExitToApp /></IconButton>
-          <IconButton
-          size="small"
-          onClick={()=>{
-            act("discard");
-          }}
-          ><Delete /></IconButton>
-          </>
-        ) : null}
-      </div>
-      ) : null}
-    </Box>
-  )
-}
+const Button = withStyles(() => ({
+  root: {
+    fontFamily: "inherit",
+    fontWeight: "bold"
+  },
+}))(Button2);
 
 let powers:any = {}
 let botPowers:any = {};
@@ -266,8 +97,10 @@ export default function Game ({ dec, state, act, start, end, bot }:any) {
   const [show, setShow] = useState(false);
   const [shopCards, setShopCards] = useState<any>(null);
   const [opDrawAmount, setOpDrawAmount] = useState(5);
+  const [ended, setEnded] = useState(false);
 
   useEffect(()=>{
+    console.log("ticked");
     if(bot) {} else if(ready) {
       act({
         op: me,
@@ -275,7 +108,7 @@ export default function Game ({ dec, state, act, start, end, bot }:any) {
         field: { me: [...field.op].reverse(), op: [...field.me].reverse(), 
         time: field.time,
         stage: field.stage,
-        effect: field.effect,
+        effect: getOpposite(field.effect),
       },
       });
     } else {
@@ -307,6 +140,8 @@ export default function Game ({ dec, state, act, start, end, bot }:any) {
     const side = !botTurn ? "me" : "op";
     const hero = !botTurn ? 7 : 2;
     let time = botTurn ? times(field.time).next : field.time;
+    let v = action.value;
+    let blocked = false;
 
     if(action.action === "gold") {
       from.gold = from.gold + action.value;
@@ -315,6 +150,7 @@ export default function Game ({ dec, state, act, start, end, bot }:any) {
     } else if(action.action === "curse") {
       if(card.buff.negate) {
         prev[person][key].buff.negate -= 1;
+        blocked = true;
       } else {
         for(let i = 0; i < action.value; i ++) {
           if(action.drawPile) enemy.deck.push(curses[action.el]);
@@ -341,8 +177,6 @@ export default function Game ({ dec, state, act, start, end, bot }:any) {
         }
       }
     } else if(action.action === "block") {
-      console.log("block:" + action.value)
-      let v = action.value;
       if(time === "Morning" && from.tribe === "Water") v *= 1.3;
       else if(time === "Night" && from.tribe === "Fire") v *= 1.3;
       if(attacker.unit === "minion") {
@@ -352,7 +186,6 @@ export default function Game ({ dec, state, act, start, end, bot }:any) {
       prev[side][key][action.el] = (prev[side][key][action.el] || 0) + v;
     } else {
       if(!prev[person][key]) return;
-      let v = action.value;
 
       if(attacker && attacker.unit === "minion") {
         v += prev[side][attacker.key].buff.strength || 0;
@@ -377,18 +210,22 @@ export default function Game ({ dec, state, act, start, end, bot }:any) {
         else v -= that.spBlock;
       }
 
-      if(card.block >= v) that.block -= v;
-      else {
+      if(card.block >= v) {
+        that.block -= v;
+        blocked = true;
+      } else {
         that.hp -= v - that.block;
+        v -= that.block;
         that.block = 0;
         if(that.hp <= 0) {
           that.spBlock = 0;
           that.hp = that.maxHp;
           that.debuff = {};
           if(that.defaultBuff) that.buff = { ...that.buff, ...that.defaultBuff };
-          if(botTurn) setOp({ ...op, dead: [...op.dead, that] });
-          else setMe({ ...me, dead: [...me.dead, that] });
-          if(card.unit !== "hero") prev[person][key] = null;
+          if(that.unit !== "hero") {
+            console.log("died")
+            cardMove({ card: that, person, key, action: that.unit === "power" || that.curse ? "exhaust" : "discard" });
+          }
         }
       }
       if(attacker && card.buff.thorns) {
@@ -409,21 +246,32 @@ export default function Game ({ dec, state, act, start, end, bot }:any) {
             attacker2.debuff = {};
             attacker2.hp = attacker2.maxHp;
             if(attacker2.defaultBuff) attacker2.buff = { ...attacker2.buff, ...attacker2.defaultBuff };
-            if(botTurn) setOp({ ...op, dead: [...op.dead, attacker2] });
-            else setMe({ ...me, dead: [...me.dead, attacker2] });
-            if(attacker2.unit !== "hero") prev[person][key] = null;
+            if(attacker2.unit !== "hero") {
+              console.log("died")
+              cardMove({ card: attacker2, person, key, action: attacker2.unit === "power" || attacker2.curse ? "exhaust" : "discard" });
+            }
           }
         }
       }
     }
 
     setSearch(null);
+    let top = key > 4 ? 50 : 0;
+    let left = key > 4 ? (key - 5) * 20 : key * 20;
+    let effect = {
+      top, left, text2: action.action !== "damage" && action.action !== "block" ? action.el : "",
+      text: blocked ? "Blocked!" : action.action === "damage" ? `-${v}` : action.action === "block" ? `+${v}` : `+${v}`,
+      color: action.action === "block" || blocked ? "rgb(100,100,255)" : action.action === "damage" ? "red" : action.action === "buff" || action.action === "gold" ? "green" : "purple",
+      person, attacker: { person: attacker.person, key: attacker.key },
+    }
+
     setField((pre:any)=>({
       ...pre,
-      op: pre.op,
-      me: pre.me,
+      op: prev.op,
+      me: prev.me,
+      effect,
     }));
-    setTick(tick + 1);
+    setTick((prev)=>prev + 1);
   }
 
   const cardMove = ({ action, person, key, card }:any) => {
@@ -448,12 +296,24 @@ export default function Game ({ dec, state, act, start, end, bot }:any) {
         break;
       }
       case "discard": {
-        if(person === "me") setMe({ ...me, dead: [...me.dead, card] });
+        if(person === "me") {
+          let cards = [card];
+          if(card.sp) {
+            for(const i in card.sp) {
+              if(i === "Shuffle Copy") {
+                cards.push(card);
+              } else if(i === "Shuffle") {
+                cards.push(curses[card.sp[i]]);
+              }
+            }
+          }
+          setMe({ ...me, dead: [...me.dead, ...cards] });
+        }
         else {
-          console.log("removing...")
           op.dead.push(card);
           setOp(op);
         }
+        console.log("removing...")
         let before = field;
         before[person][key] = null;
         setField((prev:any)=>({
@@ -468,7 +328,8 @@ export default function Game ({ dec, state, act, start, end, bot }:any) {
         break;
       }
     }
-    setTick(tick + 1);
+    // console.log("move ticked")
+    setTick((prev)=>prev + 1);
   }
 
   const draw = (num:number) => {
@@ -490,40 +351,43 @@ export default function Game ({ dec, state, act, start, end, bot }:any) {
     prev.dead = dead;
     prev.drawable = false;
     prev.hand = prev.hand.sort((a:any,b:any)=>b.gold || 0 - a.gold || 0);
-    console.log(prev.hand);
+
     if(!botTurn) {
       setMe(prev);
       setShowHand(true);
-      setTick(tick + 1);
+      setTick((prev)=>prev + 1);
     } else {
       setOp(prev);
-      setTick(tick + 1);
+      setTick((prev)=>prev + 1);
     }
   }
 
-  const checkAoe = ({ attacker, person, key, card, action }:any) => {
+  const checkAoe = async({ attacker, person, key, card, action }:any) => {
     if(card.unit === "hero" && action.minionOnly) return;
     if(action.aoe) {
       for(const x in field[person]) {
         if(field[person][x]) {
           cardAct({ card, person, key: Number(x), action, attacker });
+          await delay();
         }
       }
     } else cardAct({ card, person, key, action, attacker });
   };
 
-  const cardClick = ({ attacker, card, key, person }:any) => {
+  const cardClick = async({ attacker, card, key, person }:any) => {
     if(attacking || attacker) {
       let aCard = attacking || attacker;
-      const combat = () => {
+      const combat = () => new Promise(async(callback:any) => {
         for(const i in aCard.actions) {
-          checkAoe({ attacker: aCard, person, key, card, action: aCard.actions[i] });
+          await checkAoe({ attacker: aCard, person, key, card, action: aCard.actions[i] });
+          if(Number(i) !== aCard.actions.length - 1) await delay();
         }
-      }
+        callback();
+      });
       setAttackable(false);
-      if(powers.repeat !== -1) combat();
+      if(powers.repeat !== -1) await combat();
       if(powers.repeat) {
-        for(let i = 0; i < powers.repeat; i ++) combat();
+        for(let i = 0; i < powers.repeat; i ++) await combat();
         powers.repeat = 0;
       }
 
@@ -540,14 +404,6 @@ export default function Game ({ dec, state, act, start, end, bot }:any) {
             if(i === "Discard") setExhausting(false);
             else setExhausting(true);
             setShowHand(true);
-          } else if(i === "Shuffle Copy") {
-            const prev = me;
-            prev.dead.push(aCard);
-            setMe(prev);
-          } else if(i === "Shuffle") {
-            const prev = me;
-            prev.dead.push(curses[aCard.sp[i]]);
-            setMe(prev);
           } else if(i === "Repeat next card") {
             powers.repeat = 1;
           } else if(i === "Block on play") {
@@ -555,12 +411,13 @@ export default function Game ({ dec, state, act, start, end, bot }:any) {
           }
         }
       }
-      if(!botTurn) cardMove({ card: aCard, person, key: aCard.key, action: aCard.unit === "power" || aCard.curse ? "exhaust" : "discard" });
+      if(!botTurn) cardMove({ card: aCard, person: "me", key: 2, action: aCard.unit === "power" || aCard.curse ? "exhaust" : "discard" });
       setAttacking(null);
     }
   }
 
-  const endTurn = (person:string) => {
+  const endTurn = async(person:string) => {
+    setEnded(true);
     console.log("ended turn")
     let energyGain = 3;
     let gold = (person === "op" ? me.gold : op.gold) + baseGold + field.stage;
@@ -580,19 +437,26 @@ export default function Game ({ dec, state, act, start, end, bot }:any) {
             for(let i = 0; i < action.value; i ++) summons.push(curses[action.el]);
           } else if(action.action === "energy") {
           } else if(action.action === "block" || action.action === "buff") {
-            checkAoe({ attacker: { ...prev[person][i], person, key: Number(i) }, card: person === "me" ? prev.me[7] : prev.op[2], 
-            person, key: action.self ? Number(i) : person === "me" ? 7 : 2, action });
+            await checkAoe({ 
+              attacker: { ...prev[person][i], person, key: Number(i) }, card: person === "me" ? prev.me[7] : prev.op[2], 
+              person, key: action.self ? Number(i) : person === "me" ? 7 : 2, action 
+            });
+            await delay();
           } else {
             let taunted = false;
             for(const x in prev[enemy]) {
               if(prev[enemy][x] && prev[enemy][x].taunt) {
                 taunted = true;
-                checkAoe({ attacker: { ...prev[person][i], person, key: Number(i) }, card: prev[enemy][x], person: enemy, key: Number(x), action });
+                await checkAoe({ attacker: { ...prev[person][i], person, key: Number(i) }, card: prev[enemy][x], person: enemy, key: Number(x), action });
+                await delay();
               }
             }
-            if(!taunted) checkAoe({ 
-              attacker: { ...prev[person][i], person, key: Number(i) }, card: prev[enemy][enemyHero], person: enemy, key: enemyHero, action 
-            });
+            if(!taunted) {
+              await checkAoe({ 
+                attacker: { ...prev[person][i], person, key: Number(i) }, card: prev[enemy][enemyHero], person: enemy, key: enemyHero, action 
+              });
+              await delay();
+            }
           }
         }
       } 
@@ -641,7 +505,7 @@ export default function Game ({ dec, state, act, start, end, bot }:any) {
     
     prev.op[7] = null;
     setField((pre:any)=>{
-      return { ...prev, time: times(pre.time).next, stage: (pre.time === "Dawn" || pre.time === "Dusk") && pre.stage < 2 ? pre.stage + 1 : pre.stage }
+      return { ...prev, time: times(pre.time).next, stage: (pre.time === "Dawn" || pre.time === "Dusk") && pre.stage < 2 ? pre.stage + 1 : pre.stage, effect: {} }
     });
 
     console.log("endingturn:" + person)
@@ -654,6 +518,8 @@ export default function Game ({ dec, state, act, start, end, bot }:any) {
       setMe(me);
       op.energy = energyGain;
       op.gold = gold;
+      op.turn = true;
+      op.drawable = true;
       setOp(op);
     } else {
       setOp((prev:any)=>{
@@ -678,15 +544,17 @@ export default function Game ({ dec, state, act, start, end, bot }:any) {
         })
       }
     }
+    setTick(tick + 1);
+    setEnded(false);
   }
 
   return (
     <div className="text-center">
-    <Grid container spacing={3} style={{ width: "100%" }} className="field">
+    <Grid container spacing={3} style={{ width: "100%" }}>
       <Grid xs={2} item>
         <Grid item>
             <div className={op.deck.length ? "board m-auto" : "board empty m-auto"}>
-              <Typography>Deck: {op.deck.length}</Typography>
+              <h4>Deck: {op.deck.length}</h4>
             </div>
         </Grid>
         <Grid item style={{ height: "350px", paddingTop: "50px" }}>
@@ -699,7 +567,7 @@ export default function Game ({ dec, state, act, start, end, bot }:any) {
           <p style={{ fontWeight: "bold", fontSize: "14px", whiteSpace: "pre-line" }}>{times(field.time).status}</p>
           <h3 style={{ fontWeight: "bold", marginTop: "15px" }}>Stage: {field.stage + 1}</h3>
           <p style={{ fontWeight: "bold", fontSize: "16px", whiteSpace: "pre-line", margin: 0 }}>
-            {"\nGold:"} {2 + field.stage}
+            {"Gold:"} {2 + field.stage}
           </p>
           </div>
         </Grid>
@@ -731,9 +599,9 @@ export default function Game ({ dec, state, act, start, end, bot }:any) {
             ) : null}
           </div>
         </Grid>
-        {attacking || selected || discarding ? null : me.turn && shopCards ? (
+        {attacking || selected || discarding ? null : me.turn && shopCards && !ended ? (
           <Button
-          className="mt-2"
+          style={{ marginTop: "15px" }}
           variant="contained"
           color="primary"
           onClick={()=>endTurn("me")}>End turn</Button>
@@ -747,23 +615,17 @@ export default function Game ({ dec, state, act, start, end, bot }:any) {
             ))}
             </Box>
           <Grid xs={12} item>
+            <div style={{ backgroundColor: fieldColor(op.tribe, botTurn || op.turn) }}>
             <Box display="flex" flexWrap="wrap" style={{ 
               width: "800px", margin: "auto",
-              backgroundColor: fieldColor(op.tribe, op.turn),
-              outline: op.turn ? `solid 5px rgb(0,150,0)` : "none",
               position: "relative",
             }}>
-              <div 
-              style={{ 
-                position: "absolute", top: "0%", left: "55%", background: "red", color: "white", borderRadius: "20px", padding: "0 5px", fontWeight: "bold",
-                fontSize: "35px"
-              }}>
-                -30
-              </div>
+              <Effect effect={field.effect} show={field.effect && field.effect.person === "op"} />
             {field.op.map((card:any,key:number)=>(
                 card ? (
                   <GameCard card={card} key={key} me={false}
-                  targeted={attackable && (
+                  targeted={field.effect && field.effect.attacker && field.effect.attacker.person === "op" && field.effect.attacker.key === key ? true : 
+                  attackable && (
                     attacking.unit === "debuff" || attacking.unit === "curse" || (attacking.unit === "attack" && (card.taunt || field.op.filter((a:any)=>(a && a.taunt)).length === 0))
                   )}
                   act={(action:string)=>{
@@ -784,25 +646,28 @@ export default function Game ({ dec, state, act, start, end, bot }:any) {
                         return prev;
                       })
                       setSelected(null);
-                      setTick(tick + 1);
+                      setTick((prev)=>prev + 1);
                     }
                   }}
                   />
                 )
               ))}
             </Box>
+            </div>
             <div style={{ height: "5px", backgroundColor: "rgba(0,0,0,0.3)", borderRadius: "30%" }} />
+            <div style={{ backgroundColor: fieldColor(me.tribe, me.turn) }}>
             <Box display="flex" flexWrap="wrap"
             style={{ 
-              width: "800px", margin: "auto",
-              backgroundColor: fieldColor(me.tribe, me.turn),
-              outline: me.turn ? `solid 5px rgb(0,150,0)` : "none",
+              width: "800px", margin: "auto", position: "relative",
             }}>
+              <Effect effect={field.effect} show={field.effect && field.effect.person === "me"} />
               {field.me.map((card:any,key:number)=>(
                 card ? (
                   <GameCard key={key} card={card} me={true}
                   act={(action:string)=> cardMove({ card, person: "me", key, action })}
-                  targeted={attacking && attacking.id === card.id ? false : attackable && (attacking.unit === "skill" || attacking.unit === "power")}
+                  targeted={attacking && attacking.id === card.id ? false : 
+                    field.effect && field.effect.attacker && field.effect.attacker.person === "me" && field.effect.attacker.key === key ? true :
+                    attackable && (attacking.unit === "skill" || attacking.unit === "power")}
                   click={()=> cardClick({ key, card, person: "me" })}
                   info={{ ...field.me[7].buff, ...field.me[7].debuff, time: field.time, tribe: me.tribe }}
                   />
@@ -833,13 +698,14 @@ export default function Game ({ dec, state, act, start, end, bot }:any) {
                       setMe({ ...me, energy: selected.cost === - 1 ? 0 : me.energy -= selected.cost });
                       setField(prev);
                       setSelected(null);
-                      setTick(tick + 1);
+                      setTick((prev)=>prev + 1);
                     }
                   }}
                   />
                 )
               ))}
             </Box>
+            </div>
           </Grid>
         </Grid>
       </Grid>
@@ -850,9 +716,9 @@ export default function Game ({ dec, state, act, start, end, bot }:any) {
               Remain: {op.dead.length}
             </div>
           </Grid>
-          <Grid item>
+          <Grid item style={{ marginTop: "15px" }}>
             <div className={"board shop m-auto"}>
-              <Typography>Shop</Typography>
+              <h4>Shop</h4>
               <p>Remain: {shop.length}</p>
               {me.turn ? <Button variant="contained" color={shopCards ? "primary" : "secondary"}
               onClick={()=>{
@@ -888,7 +754,7 @@ export default function Game ({ dec, state, act, start, end, bot }:any) {
             </div>
             </div>
             <div className={me.deck.length ? "board m-auto" : "board empty m-auto"}>
-              <Typography>Deck: {me.deck.length}</Typography>
+              <h4>Deck: {me.deck.length}</h4>
                 {me.drawable ? (
                   <Button
                   size="large"
@@ -920,7 +786,7 @@ export default function Game ({ dec, state, act, start, end, bot }:any) {
           </Grid>
           {!me.turn && !op.turn ? (
             <Button
-            className="mt-2"
+            style={{ marginTop: "15px" }}
             variant="contained"
             onClick={()=>{
               setFirstTurn(true);
@@ -931,7 +797,7 @@ export default function Game ({ dec, state, act, start, end, bot }:any) {
             }}
             >Start</Button>
           ) : (<Button
-            className="mt-3"
+            style={{ marginTop: "15px" }}
             variant="contained"
             color="default"
             onClick={()=>setBeforeEnd(true)}
@@ -976,7 +842,8 @@ export default function Game ({ dec, state, act, start, end, bot }:any) {
                 ) : null}
                 <div
                 style={{ cursor: "pointer", 
-                pointerEvents: op.turn || (firstTurn && (card.unit === "attack" || card.unit === "minion")) || (me.energy < card.cost && !discarding) ? "none" : "all", }}
+                pointerEvents: op.turn || (firstTurn && !discarding && (card.unit === "attack" || card.unit === "minion")) ||
+                (me.energy < card.cost && !discarding) ? "none" : "all", }}
                 onClick={()=>{
                   if(discarding) {
                     const h = [...me.hand];
@@ -997,7 +864,7 @@ export default function Game ({ dec, state, act, start, end, bot }:any) {
                 }}>
                 <Card 
                 card={card} 
-                disabled={op.turn || (firstTurn && (card.unit === "attack" || card.unit === "minion")) || (me.energy < card.cost && !discarding)} 
+                disabled={op.turn || (firstTurn && !discarding && (card.unit === "attack" || card.unit === "minion")) || (me.energy < card.cost && !discarding)} 
                 info={{ ...field.me[7].buff, ...field.me[7].debuff, time: field.time, tribe: me.tribe }}
                 />
                 </div>
@@ -1008,7 +875,7 @@ export default function Game ({ dec, state, act, start, end, bot }:any) {
       ) : null}
       <Dialog maxWidth="sm" fullWidth open={beforeEnd} onClose={()=>setBeforeEnd(false)}>
         <DialogContent style={{ backgroundColor: "rgb(240,240,240)" }}>
-          <Typography>Are you sure to end?</Typography>
+          <h4>Are you sure to end?</h4>
           <Button></Button>
         </DialogContent>
         <DialogActions>
@@ -1021,7 +888,7 @@ export default function Game ({ dec, state, act, start, end, bot }:any) {
         <Dialog maxWidth="md" fullWidth open={show} onClose={()=>setShow(false)}>
           <DialogContent style={{ backgroundColor: "rgb(240,240,240)", textAlign: "center" }}>
             {/* <Filter filter={filter} setFilter={(fil:any)=>setFilter(fil)} /> */}
-            <Typography variant="h4" style={{ marginBottom: 10 }}>{from === 1 ? "SHOP" : from === 0 ? "Draw Pile" : "Discard Pile" }</Typography>
+            <h4 style={{ marginBottom: 10 }}>{from === 1 ? "SHOP" : from === 0 ? "Draw Pile" : "Discard Pile" }</h4>
             <Box display="flex" flexWrap="wrap" style={{ width: "100%", margin: "auto", justifyContent: "space-between" }}>
               {search.map((card:any,key:number)=>(
                 <div key={key}>
@@ -1040,9 +907,9 @@ export default function Game ({ dec, state, act, start, end, bot }:any) {
                   <Card card={card} disabled={card.gold > me.gold} />
                   {from === 1 ? (
                   <div style={{ padding: "0px 20px" }}>
-                    <Typography variant="h5" style={{ backgroundColor: "orange", color: "white", fontWeight: "bold", borderRadius: "10px", textAlign: "center" }}>
+                    <h4 style={{ backgroundColor: "orange", color: "white", fontWeight: "bold", borderRadius: "10px", textAlign: "center" }}>
                       {card.gold}
-                    </Typography>
+                    </h4>
                   </div>
                   ) : null}
                   </div>

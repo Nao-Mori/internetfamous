@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { 
+    Button,
     CircularProgress, Typography,
   } from '@material-ui/core';
 import io from "socket.io-client";
@@ -15,6 +16,13 @@ export default function Connection ({ deck, allcards, end, bot }:any) {
   
     const enter = () => {
       socket = io(api.split("/api")[0]);
+      socket.emit('joingame', {}, (res:any) => {
+        console.log("joined in lobby")
+      })
+    //   socket.on("connect_error", (err:any) => {
+    //       console.log(err)
+    //     console.log(`connect_error due to ${err.message}`);
+    //   });
       socket.on('start', (res:any) => {
         if(res) {
           setRoom(res);
@@ -30,8 +38,6 @@ export default function Connection ({ deck, allcards, end, bot }:any) {
           setState(res);
         }
       })
-      socket.emit('joingame', {}, (res:any) => {
-      })
 
     }
 
@@ -39,6 +45,7 @@ export default function Connection ({ deck, allcards, end, bot }:any) {
       if(bot) setStarted(true);
       else enter();
       return (()=>{
+        console.log("hi")
         if(!bot) socket.disconnect();
       })
     },[])
@@ -61,8 +68,11 @@ export default function Connection ({ deck, allcards, end, bot }:any) {
           />
       ) : (
         <div>
-          <Typography>Waiting for an opponent...</Typography>
+          <h3>Waiting for an opponent...</h3>
           <CircularProgress />
+          <br/>
+          <br/>
+          <Button size="small" variant="contained" onClick={end}>Cancel</Button>
         </div>
       )}
       </>

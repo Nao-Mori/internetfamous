@@ -1,5 +1,6 @@
 body {
-  background-color: rgb(240,240,240);
+  font-family: 'Saira Semi Condensed', sans-serif;
+  background: radial-gradient(circle, rgb(191, 223, 187) 9%, rgb(179, 228, 183) 62%, rgb(190, 214, 175)100%);
 }
 
 .App {
@@ -113,19 +114,26 @@ th {
   max-width: 70px;
   max-height: 70px;
   padding : 0;
+  display: inline-block;
+  vertical-align: middle;
   width : auto;
   height : auto;
   border-radius: 5%;
   border: solid 1px rgb(220,220,220);
   overflow : hidden;
-  margin-top : auto;
-  margin-bottom : auto;
   background-color: white;
   opacity: 1;
   @media (max-width: 768px) { 
     max-width: 50px;
     max-height: 50px;  
   }
+}
+
+.img-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 80px;
 }
 
 .float-image {
@@ -196,7 +204,7 @@ h1, h2, h3, h4, h5, h6 {
     color: black;
   }
   &.short {
-    min-height: 18px;
+    min-height: 15px;
     width: 100px;
     margin: 0 2px;
   }
@@ -207,10 +215,6 @@ h1, h2, h3, h4, h5, h6 {
   margin: 5px;
   text-align: center;
   border: solid 1px black;
-}
-
-.field {
-  background: radial-gradient(circle, rgb(169, 212, 163) 9%, rgb(136, 202, 142) 62%, rgb(167, 211, 142)100%);
 }
 
 a {
@@ -252,5 +256,14 @@ a {
 
 h3 {
   font-size: 200%;
+  margin: 0;
+}
+
+h4 {
+  font-size: larger;
+  margin: 0;
+}
+
+p {
   margin: 0;
 }

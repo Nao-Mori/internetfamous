@@ -1,16 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { 
-  CircularProgress, TextField, Button, Typography, CardContent, CardActions, IconButton, Dialog, DialogContent, DialogActions, 
-  Box, Tooltip, DialogTitle,
+  CircularProgress, TextField, CardContent, CardActions, IconButton, Dialog, DialogContent, DialogActions, 
+  Box, Tooltip, DialogTitle, withStyles,
 } from '@material-ui/core';
-import { Edit, Delete, AccountCircle, Face, } from "@material-ui/icons";
+import { Edit, Delete, AccountCircle, } from "@material-ui/icons";
 import Kard from "@material-ui/core/Card"
-import { Filter } from "./Util";
 import { api, headers } from "../api";
 import axios from "axios";
 import { allcards } from "./Cards";
 import CardBox from "@material-ui/core/Card";
 import Connection from "./Connection";
+import Button2 from "@material-ui/core/Button";
 
 const getId = () => {
   let id = ""
@@ -26,6 +26,13 @@ const getId = () => {
   return id;
 };
 
+const Button = withStyles(() => ({
+  root: {
+    fontFamily: "inherit",
+    fontWeight: "bold"
+  },
+}))(Button2);
+
 const Card = ({ card, chosen }:any) => {
 
   return (
@@ -39,16 +46,16 @@ const Card = ({ card, chosen }:any) => {
       padding: "2px"
     }}>
       <div>
-        <Tooltip title={<Typography>{card.name}</Typography>}>
-          <Typography noWrap style={{ fontSize: "80%", fontWeight: "bold" }}>
+        <Tooltip title={<h4>{card.name}</h4>}>
+          <h4 style={{ fontSize: "80%", fontWeight: "bold" }}>
             {card.cost !== undefined ? (
-              <b style={{ backgroundColor: "rgb(50,50,255)", color: "white", borderRadius: "50%", padding: "2px 6px" }}>
+              <b style={{ backgroundColor: "rgb(50,50,255)", color: "white", borderRadius: "50%", padding: "0px 7px" }}>
                 {card.cost === -1 ? "X" : card.cost}
               </b>
-            ) : <Face fontSize="small" style={{ color: "orange" }} />} {card.name}
-          </Typography>
+            ) : null} {card.name}
+          </h4>
         </Tooltip>
-        <div style={{ textAlign: "center", height: "70px", padding: "auto", margin: "5px auto" }}>
+        <div className="img-container">
         {card.img ? (
           <img alt="cardpic" src={card.img} className="compact-image2" />
         ) : card.unit === "attack" ? (
@@ -71,27 +78,28 @@ const Card = ({ card, chosen }:any) => {
           <AccountCircle style={{ fontSize: "70px", color: "rgb(150,150,150)" }} />
         )}
         </div>
-        {card.hp ? <Typography style={{ marginBottom: "2px", backgroundColor: "red", color: "white", fontWeight: "bold" }}>{card.hp}</Typography> : null}
+        <div style={{ minHeight: "90px" }}>
+        {card.hp ? <h4 style={{ marginBottom: "2px", backgroundColor: "red", color: "white", fontWeight: "bold" }}>{card.hp}</h4> : null}
         {card.taunt ? <p className="cardtext" style={{ background: "rgb(100,100,100)" }}>Taunt</p> : null}
         {card.type === "minion" ? (
           <>
             <p style={{ margin: 0 }}>Minion Action:</p>
             {card.actions.map((action:any,key:number)=>(
-              <Typography key={key} style={{ fontWeight: "bold" }}>
+              <p key={key} style={{ fontWeight: "bold" }}>
                 {action.action === "curse" ? 
                 `Curse: Add` : ""} {action.el === "hp" ? `${action.value} damage` :
                 action.action === "block" ? `${action.value} ${action.el === "block" ? "block" : "tough"}` :
                 `${action.multiply ? "x" : ""}${action.value} ${action.el}`} {action.aoe ? "to all" : action.self ? "to itself" : action.minionOnly ? "to a minion" : ""}
-              </Typography>
+              </p>
             ))}
           </>
         ) : card.actions ? card.actions.map((action:any,key:number)=>(
-          <Typography key={key} style={{ fontWeight: "bold" }}>
+          <p key={key} style={{ fontWeight: "bold" }}>
             {action.action === "curse" ? 
-            `Curse: Add${action.drawPile ? " to draw pile" : " to discard pile"}` : ""} {action.el === "hp" ? `${action.value} damage` :
+            `Curse: Add${action.drawPile ? " to draw" : " to discard"}` : ""} {action.el === "hp" ? `${action.value} damage` :
             action.action === "block" ? `${action.value} ${action.el === "block" ? "block" : "tough"}` :
             `${action.multiply ? "x" : ""}${action.value} ${action.el}`} {action.aoe ? "to all" : action.self ? "to itself" : action.minionOnly ? "to a minion" : ""}
-          </Typography>
+          </p>
         )) : null}
         {card.sp ? (
           Object.keys(card.sp).map((key:any)=>{
@@ -104,6 +112,7 @@ const Card = ({ card, chosen }:any) => {
               if(value) return <p key={key} className="cardtext" style={{ background: "rgb(255,100,100)" }}>{key} {value}</p>
               else return null;
         }) : null}
+        </div>
         {card.gold ? <p style={{ backgroundColor: "orange", color: "white", margin: 5, borderRadius: "10px", fontWeight: "bold", fontSize: "15px" }}>{card.gold}</p> : null}
       </div>
     </CardBox>
@@ -186,7 +195,7 @@ export default function Game2 () {
   }
 
   return (
-    <div className="p-2 text-center">
+    <div className="p-2 text-center field">
       {started ? (
         <Connection deck={currentDeck} end={()=>{
           setStarted(false);
@@ -196,12 +205,12 @@ export default function Game2 () {
         <CircularProgress />
       ) : (
         <div>
-            <Typography variant="h4">Decks</Typography>
-            <Box display="flex" flexDirection="row" style={{ maxHeight: "500px", overflowY: "auto" }}>
+            <h3>Decks</h3>
+            <Box border={1} display="flex" flexDirection="row" style={{ maxHeight: "500px", overflowY: "auto", flexWrap: "wrap" }}>
             {decks.map((deck:any,key:number)=>(
               <Kard key={key} style={{ backgroundColor: "rgb(240,255,255)", width: "200px", margin: 5, }}>
                   <CardContent>
-                  <Typography variant="h5">{deck.name}<br/>({deck.cards.length},{deck.extra.length})</Typography>
+                  <h4>{deck.name}<br/>({deck.cards.length},{deck.extra.length})</h4>
                   {deck.hero ? (
                     <Card card={deck.hero} key={key}/>
                   ) : null}
@@ -273,14 +282,15 @@ export default function Game2 () {
             ))}
             </Box>
             <Button
-            className="mt-2"
+            style={{ marginTop: "15px" }}
+            color="primary"
             variant="contained"
             onClick={()=>{
               setEditDeck({ name: "Deck", cards: [], extra: [], id: getId() });
             }}
             >Create New Deck</Button>
             <br/><br/>
-            <Typography variant="h4">Heroes ({heroes.length})</Typography>
+            <h3>Heroes ({heroes.length})</h3>
             <Box border={1} display="flex" justifyContent="center" flexWrap="wrap" style={{ maxHeight: "600px", overflowY: "auto" }}>
             {heroes.map((card:any,key:number)=>(
               <div key={key}>
@@ -288,8 +298,8 @@ export default function Game2 () {
               </div>
             ))}
             </Box>
-            <Typography variant="h4" className="mt-3">Cards ({cards.length})</Typography>
-            <Filter filter={filter} setFilter={(fil:any)=>setFilter(fil)} />
+            <h3>Cards ({cards.length})</h3>
+            {/* <Filter filter={filter} setFilter={(fil:any)=>setFilter(fil)} /> */}
             <Box border={1} display="flex" justifyContent="center" flexWrap="wrap" style={{ maxHeight: "800px", overflowY: "auto" }}>
             {(cards.filter((a:any)=>{
             if(filter.level && filter.level !== a.level) return false;
@@ -303,8 +313,8 @@ export default function Game2 () {
               </div>
             ))}
             </Box>
-            <Typography variant="h4" className="mt-3">Shop Cards ({extra.length})</Typography>
-            <Filter filter={filter} setFilter={(fil:any)=>setFilter(fil)} />
+            <h3>Shop Cards ({extra.length})</h3>
+            {/* <Filter filter={filter} setFilter={(fil:any)=>setFilter(fil)} /> */}
             <Box border={1} display="flex" justifyContent="center" flexWrap="wrap" style={{ maxHeight: "800px", overflowY: "auto" }}>
             {(extra.filter((a:any)=>{
             if(filter.level && filter.level !== a.level) return false;
@@ -358,7 +368,7 @@ export default function Game2 () {
               </div>
             ))}
             </Box>
-            <Typography variant="h5" className="mt-3">Cards: {editDeck.cards.length}</Typography>
+            <h4 className="mt-3">Cards: {editDeck.cards.length}</h4>
             <Button
             size="small"
             variant="contained"
@@ -371,7 +381,7 @@ export default function Game2 () {
               Add Cards
             </Button>
             {deckCards("cards")}
-            <Typography variant="h5" className="mt-3">Shop: {editDeck.extra.length}</Typography>
+            <h4 className="mt-3">Shop: {editDeck.extra.length}</h4>
             <Button
             size="small"
             variant="contained"
@@ -386,7 +396,7 @@ export default function Game2 () {
             {deckCards("extra")}
             <Dialog open={Boolean(show)} maxWidth="xl" fullWidth onClose={()=>setShow("")}>
               <DialogTitle>
-              <Typography variant="h5">{editDeck[show] ? editDeck[show].length : 0} Cards Added</Typography>
+              <h4>{editDeck[show] ? editDeck[show].length : 0} Cards Added</h4>
               </DialogTitle>
               <DialogContent>
                 <Box display="flex" flexDirection="row" flexWrap="wrap" style={{ overflowY: "auto", justifyContent: "center" }}>

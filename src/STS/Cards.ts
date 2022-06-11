@@ -42,7 +42,7 @@ export const allcards = {
     //Gold 2
     { name: "Pommel Strike", gold: 2, unit: "attack", cost: 1, sp: { draw: 1 }, actions: [{ action: "damage", el: "hp", value: 9 }] },
     { name: "Sudden Bark", gold: 2, unit: "attack", cost: 1, actions: [{ action: "damage", el: "hp", value: 8 }, { action: "debuff", el: "weak", value: 2 }] },
-    { name: "Chincha Strike", gold: 2, unit: "attack", cost: 1, sp: { ["Change Damage"]: 7 }, actions: [{ action: "damage", el: "hp", value: 7 }] },
+    { name: "Chincha Strike", gold: 2, unit: "attack", cost: 1, sp: { ["Change Damage"]: 8 }, actions: [{ action: "damage", el: "hp", value: 8 }] },
     { name: "Copy Mori Slash", gold: 2, unit: "attack", cost: 0, sp: { "Shuffle Copy": 1 }, actions: [{ action: "damage", el: "hp", value: 7 }] },
     { name: "Dual Blades", gold: 2, unit: "attack", cost: 1, actions: [{ action: "damage", el: "hp", value: 6 }, { action: "damage", el: "hp", value: 6 }] },
 
@@ -121,16 +121,16 @@ export const allcards = {
     actions: [{ action: "damage", el: "hp", value: 7 }, { action: "damage", el: "hp", value: 7 }, { action: "damage", el: "hp", value: 7 }] },
     { name: "Meteor", gold: 7, unit: "attack", cost: 3, img: "https://previews.123rf.com/images/tarasdubov/tarasdubov2010/tarasdubov201000949/158007221-meteor-with-trail-of-fire-celestial-object-flying-in-sky-cartoon-flat-illustration-comet-with-tail-d.jpg",
     actions: [{ action: "damage", el: "hp", value: 40 }, { action: "damage", el: "hp", value: 10, aoe: true }] },
-    { name: "Earth Quake", gold: 7, unit: "attack", cost: 2, img: "https://static8.depositphotos.com/1472772/978/i/950/depositphotos_9787265-stock-photo-earthquake-3d-illustration.jpg",
+    { name: "Earth Quake", gold: 7, unit: "attack", cost: 2, img: "https://img.lovepik.com/free-png/20210926/lovepik-earthquake-cartoon-disaster-scene-png-image_401473774_wh1200.png",
     actions: [{ action: "damage", el: "hp", value: 30, aoe: true }] },
 
-    { name: "Shooting Star", gold: 7, unit: "skill", cost: 1, img: "https://png.pngtree.com/png-vector/20220118/ourmid/pngtree-cartoon-hand-drawn-shooting-star-png-image_4303801.png",
-    actions: [{ action: "block", el: "block", value: 20 }, { action: "block", el: "spBlock", value: 8 }, { action: "buff", el: "negate", value: 2 }] },
+    { name: "Shooting Star", gold: 7, unit: "skill", cost: 1, sp: { "Retain": "in hand" }, img: "https://previews.123rf.com/images/lineartestpilot/lineartestpilot1803/lineartestpilot180302423/96543894-cartoon-sternschnuppe.jpg",
+    actions: [{ action: "block", el: "block", value: 20 }, { action: "block", el: "spBlock", value: 10 }, { action: "buff", el: "negate", value: 1 }] },
 
     { name: "Greeding", gold: 7, unit: "skill", cost: 0, sp: { draw: 2 }, actions: [{ action: "energy", el: "energy", value: 2 }] },
     { name: "Glorious Days", gold: 7, unit: "skill", cost: 0, sp: { ["Repeat next card"]: 1 }, actions: [] },
 
-    { name: "Burning Red", gold: 7, unit: "curse", cost: 0, img: "https://cutewallpaper.org/22/cartoon-fire-wallpapers/2086621982.jpg",
+    { name: "Burning Red", gold: 7, unit: "curse", cost: 0, img: "https://thumbs.dreamstime.com/b/cartoon-icon-brightly-blazing-fire-burning-campfire-bright-red-orange-flame-flat-vector-mobile-game-sticker-style-125207080.jpg",
     actions: [{ action: "curse", el: "Burn", value: 3, drawPile: true }] },
 
     { name: "Obelisk", gold: 7, unit: "minion", cost: 3, building: true, hp: 50, maxHp: 50, block: 0, actions: [{ action: "energy", el: "energy", value: 1 }, { action: "block", el: "block", value: 10 }], buff: {}, debuff: {} },
